@@ -1,0 +1,4 @@
+django
+pre-commit
+requests
+Pillow
