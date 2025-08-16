@@ -1,0 +1,9 @@
+{% extends "core/base.html" %}
+{% block content %}
+  <h2>Card Set</h2>
+  <ul>
+    {% for card_set in object_list %}
+      <li>{{ card_set.name }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

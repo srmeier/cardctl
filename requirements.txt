@@ -2,3 +2,4 @@ django
 pre-commit
 requests
 Pillow
+django-htmx
