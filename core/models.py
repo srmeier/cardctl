@@ -11,7 +11,6 @@ class CtlCardSet(models.Model):
     name = models.CharField(max_length=200)
     source = models.CharField(max_length=50, choices=Source)
     metadata = models.JSONField(null=True, blank=True)
-    published = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -25,15 +24,7 @@ class CtlCardSet(models.Model):
 
 
 class CtlRefCard(models.Model):
-    class Side(models.IntegerChoices):
-        FRONT = 1, "Front"
-        BACK = 2, "Back"
-
     name = models.CharField(max_length=200)
-    side = models.IntegerField(choices=Side)
-    image = models.ImageField(upload_to="ctlrefcard_image")
-    number = models.CharField(max_length=50)
-    variant = models.CharField(max_length=50, null=True, blank=True)
     card_set = models.ForeignKey(CtlCardSet, on_delete=models.CASCADE)
     metadata = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

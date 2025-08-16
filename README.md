@@ -5,7 +5,7 @@
 ```bash
 pip install -r requirements.txt
 python manage.py makemigrations core
-python manage.py migrate
+python manage.py migrate  # Will take time on first run as it populates your DB with card references
 python manage.py createsuperuser
 ```
 

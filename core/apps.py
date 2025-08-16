@@ -15,7 +15,7 @@ def update_references(sender: AppConfig, **kwargs):
     if not isinstance(sender, CoreConfig):
         return
 
-    from .models import CtlCardSet  # noqa: E402
+    from .models import CtlCardSet, CtlRefCard  # noqa: E402
 
     sets = []
 
@@ -44,10 +44,32 @@ def update_references(sender: AppConfig, **kwargs):
                 name=set_data.get("name"),
                 source=CtlCardSet.Source.SCRYFALL,
                 metadata=set_data,
-                published=set_data.get("released_at"),
             )
             card_set.save()
 
-        # response = requests.get(set_data.get("search_uri"))
-        # response.raise_for_status()
-        # payload: dict = response.json()
+        cards = []
+
+        response = requests.get(set_data.get("search_uri"))
+        response.raise_for_status()
+        payload: dict = response.json()
+
+        cards.extend(payload.get("data", []))
+
+        while payload.get("has_more", False):
+            response = requests.get(payload.get("next_page"))
+            response.raise_for_status()
+            payload: dict = response.json()
+
+            cards.extend(payload.get("data", []))
+
+        card_data: dict
+        for card_data in sets:
+            try:
+                ref_card = CtlRefCard.objects.get(metadata__id=card_data.get("id"))
+            except CtlRefCard.DoesNotExist:
+                ref_card = CtlRefCard(
+                    name=set_data.get("name"),
+                    card_set=card_set,
+                    metadata=card_data,
+                )
+                ref_card.save()
