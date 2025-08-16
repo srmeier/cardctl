@@ -63,12 +63,12 @@ def update_references(sender: AppConfig, **kwargs):
             cards.extend(payload.get("data", []))
 
         card_data: dict
-        for card_data in sets:
+        for card_data in cards:
             try:
                 ref_card = CtlRefCard.objects.get(metadata__id=card_data.get("id"))
             except CtlRefCard.DoesNotExist:
                 ref_card = CtlRefCard(
-                    name=set_data.get("name"),
+                    name=card_data.get("name"),
                     card_set=card_set,
                     metadata=card_data,
                 )
