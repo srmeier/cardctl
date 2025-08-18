@@ -17,6 +17,9 @@ def update_references(sender: AppConfig, **kwargs):
 
     from .models import CtlCardSet, CtlRefCard  # noqa: E402
 
+    card_set_objects = []
+    ref_card_objects = []
+
     sets = []
 
     response = requests.get("https://api.scryfall.com/sets")
@@ -45,7 +48,7 @@ def update_references(sender: AppConfig, **kwargs):
                 source=CtlCardSet.Source.SCRYFALL,
                 metadata=set_data,
             )
-            card_set.save()
+            card_set_objects.append(card_set)
 
         cards = []
 
@@ -72,4 +75,7 @@ def update_references(sender: AppConfig, **kwargs):
                     card_set=card_set,
                     metadata=card_data,
                 )
-                ref_card.save()
+                ref_card_objects.append(ref_card)
+
+    CtlCardSet.objects.bulk_create(card_set_objects)
+    CtlRefCard.objects.bulk_create(ref_card_objects)
