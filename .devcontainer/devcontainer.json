@@ -1,0 +1,24 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/alpine
+{
+	"name": "cardctl",
+	"dockerComposeFile": "${localWorkspaceFolder}/docker-compose.yml",
+	"service": "django",
+	"shutdownAction": "stopCompose",
+	"workspaceFolder": "/cardctl",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"python.terminal.activateEnvInCurrentTerminal": true,
+				"python.defaultInterpreterPath": "/opt/venv/bin/python"
+			},
+			"extensions": [
+				"ms-python.python",
+				"ms-azuretools.vscode-docker",
+				"batisteo.vscode-django",
+				"GitHub.copilot",
+				"junstyle.vscode-django-support"
+			]
+		}
+	}
+}

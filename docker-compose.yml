@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  opensearch:
+    image: opensearchproject/opensearch
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    environment:
+      discovery.type: single-node
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    env_file:
+      - .env
+
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/cardctl
+    env_file:
+      - .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  opensearch_data:
