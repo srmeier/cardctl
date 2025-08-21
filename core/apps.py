@@ -109,6 +109,7 @@ def update_references(sender: AppConfig, **kwargs):
                 requests.get(card.metadata["image_uris"]["large"], stream=True).raw
             )
             for card in batch_cards
+            if ("image_uris" in card.metadata)  # TODO: Handle multi-face cards
         ]
         texts = [""] * len(batch_cards)
 
