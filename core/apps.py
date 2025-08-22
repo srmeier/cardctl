@@ -7,6 +7,7 @@ from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 from opensearchpy import OpenSearch, helpers
 from PIL import Image
+from requests.exceptions import ConnectionError
 from tqdm import tqdm
 from transformers import CLIPModel, CLIPProcessor
 from transformers.models.clip.modeling_clip import CLIPOutput
@@ -21,6 +22,7 @@ class CoreConfig(AppConfig):
         post_migrate.connect(update_references)
 
 
+# NOTE: This should be a async celery task that gets kicked off by the signal and then status on that task get surfaced in the app
 def update_references(sender: AppConfig, **kwargs):
     if not isinstance(sender, CoreConfig):
         return
@@ -141,7 +143,7 @@ def update_references(sender: AppConfig, **kwargs):
         if not hits:
             break
 
-    batch_size = 512
+    batch_size = 128
     cards = list(CtlRefCard.objects.all())
 
     i = 0
@@ -170,7 +172,8 @@ def update_references(sender: AppConfig, **kwargs):
                     for url in urls:
                         images.append(Image.open(requests.get(url, stream=True).raw))
                         download_pbar.update(1)
-            except ProtocolError as error:
+            except (ProtocolError, ConnectionError) as error:
+                sleep(30)
                 continue
 
             if images == []:
