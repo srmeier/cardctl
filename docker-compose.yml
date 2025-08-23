@@ -13,6 +13,17 @@ services:
     env_file:
       - .env
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/usr/share/opensearch/data
+      - rabbitmq_log:/var/log/rabbitmq
+    env_file:
+      - .env
+
   django:
     build:
       context: .
@@ -22,6 +33,20 @@ services:
       - "8000:8000"
     volumes:
       - .:/cardctl
+      - static_files:/var/www/cardctrl.com/static
+      - media_files:/var/www/cardctrl.com/media
+    env_file:
+      - .env
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A cardctl worker -B --loglevel=info
+    volumes:
+      - .:/cardctl
+      - static_files:/var/www/cardctl.com/static
+      - media_files:/var/www/cardctl.com/media
     env_file:
       - .env
     deploy:
@@ -33,4 +58,8 @@ services:
               capabilities: [gpu]
 
 volumes:
+  static_files:
+  media_files:
   opensearch_data:
+  rabbitmq_data:
+  rabbitmq_log:

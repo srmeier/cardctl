@@ -6,3 +6,7 @@ django-htmx
 transformers
 gunicorn
 opensearch-py
+celery
+django-celery-results
+torch
+torchvision
