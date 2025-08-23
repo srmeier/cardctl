@@ -29,54 +29,73 @@ def update_references(sender: AppConfig, **kwargs):
 
     from .models import CtlCardSet, CtlRefCard  # noqa: E402
 
-    # card_set_objects = []
-    # ref_card_objects = []
-    # sets = []
-    # response = requests.get("https://api.scryfall.com/sets")
-    # response.raise_for_status()
-    # payload: dict = response.json()
-    # sets.extend(payload.get("data", []))
-    # while payload.get("has_more", False):
-    #     response = requests.get(payload.get("next_page"))
-    #     response.raise_for_status()
-    #     payload: dict = response.json()
-    #     sets.extend(payload.get("data", []))
-    # set_data: dict
-    # for set_data in sets:
-    #     if set_data.get("tcgplayer_id") is None:
-    #         continue
-    #     try:
-    #         card_set = CtlCardSet.objects.get(metadata__id=set_data.get("id"))
-    #     except CtlCardSet.DoesNotExist:
-    #         card_set = CtlCardSet(
-    #             name=set_data.get("name"),
-    #             source=CtlCardSet.Source.SCRYFALL,
-    #             metadata=set_data,
-    #         )
-    #         card_set_objects.append(card_set)
-    #     cards = []
-    #     response = requests.get(set_data.get("search_uri"))
-    #     response.raise_for_status()
-    #     payload: dict = response.json()
-    #     cards.extend(payload.get("data", []))
-    #     while payload.get("has_more", False):
-    #         response = requests.get(payload.get("next_page"))
-    #         response.raise_for_status()
-    #         payload: dict = response.json()
-    #         cards.extend(payload.get("data", []))
-    #     card_data: dict
-    #     for card_data in cards:
-    #         try:
-    #             ref_card = CtlRefCard.objects.get(metadata__id=card_data.get("id"))
-    #         except CtlRefCard.DoesNotExist:
-    #             ref_card = CtlRefCard(
-    #                 name=card_data.get("name"),
-    #                 card_set=card_set,
-    #                 metadata=card_data,
-    #             )
-    #             ref_card_objects.append(ref_card)
-    # CtlCardSet.objects.bulk_create(card_set_objects)
-    # CtlRefCard.objects.bulk_create(ref_card_objects)
+    card_set_objects = []
+    ref_card_objects = []
+
+    sets = []
+
+    response = requests.get("https://api.scryfall.com/sets")
+    response.raise_for_status()
+    payload: dict = response.json()
+
+    sets.extend(payload.get("data", []))
+
+    while payload.get("has_more", False):
+        response = requests.get(payload.get("next_page"))
+        response.raise_for_status()
+        payload: dict = response.json()
+
+        sets.extend(payload.get("data", []))
+
+    set_data: dict
+
+    for set_data in tqdm(sets, desc="Verifying sets"):
+        continue
+        if set_data.get("tcgplayer_id") is None:
+            continue
+
+        try:
+            card_set = CtlCardSet.objects.get(metadata__id=set_data.get("id"))
+        except CtlCardSet.DoesNotExist:
+            card_set = CtlCardSet(
+                name=set_data.get("name"),
+                source=CtlCardSet.Source.SCRYFALL,
+                metadata=set_data,
+            )
+            card_set_objects.append(card_set)
+
+        cards = []
+
+        response = requests.get(set_data.get("search_uri"))
+        response.raise_for_status()
+        payload: dict = response.json()
+
+        cards.extend(payload.get("data", []))
+
+        while payload.get("has_more", False):
+            response = requests.get(payload.get("next_page"))
+            response.raise_for_status()
+            payload: dict = response.json()
+
+            cards.extend(payload.get("data", []))
+
+        card_data: dict
+
+        for card_data in tqdm(
+            cards, desc=f"Verifying cards in {set_data.get('name')}", leave=False
+        ):
+            try:
+                ref_card = CtlRefCard.objects.get(metadata__id=card_data.get("id"))
+            except CtlRefCard.DoesNotExist:
+                ref_card = CtlRefCard(
+                    name=card_data.get("name"),
+                    card_set=card_set,
+                    metadata=card_data,
+                )
+                ref_card_objects.append(ref_card)
+
+    CtlCardSet.objects.bulk_create(card_set_objects)
+    CtlRefCard.objects.bulk_create(ref_card_objects)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
