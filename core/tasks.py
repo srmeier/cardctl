@@ -12,11 +12,11 @@ from transformers import CLIPModel, CLIPProcessor
 from transformers.models.clip.modeling_clip import CLIPOutput
 from urllib3.exceptions import ProtocolError
 
-from .models import CtlCardSet, CtlRefCard
-
 
 @shared_task(bind=True)
 def update_references(self: Task):
+    from .models import CtlCardSet, CtlRefCard  # noqa: E402
+
     card_set_objects = []
     ref_card_objects = []
 
