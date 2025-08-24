@@ -9,7 +9,7 @@ def trigger_update_references(sender: AppConfig, **kwargs):
     if not isinstance(sender, CoreConfig):
         return
 
-    update_references.delay()
+    # update_references.delay()
 
 
 class CoreConfig(AppConfig):
