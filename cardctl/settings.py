@@ -33,6 +33,13 @@ ALLOWED_HOSTS = [
     for h in getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,0.0.0.0").split(",")
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    h.strip()
+    for h in getenv(
+        "DJANGO_CSRF_TRUSTED_ORIGINS",
+        "http://127.0.0.1,http://localhost,http://0.0.0.0",
+    ).split(",")
+]
 
 # Application definition
 

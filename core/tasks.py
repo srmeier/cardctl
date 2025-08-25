@@ -72,7 +72,25 @@ def update_references(self: Task):
             cards, desc=f"Verifying cards in {set_data.get('name')}", leave=False
         ):
             try:
+                # NOTE: Should link this to primary key to avoid MultipleObjectsReturned error
                 ref_card = CtlRefCard.objects.get(metadata__id=card_data.get("id"))
+                # [2025-08-24 21:14:43,956: ERROR/ForkPoolWorker-33] Task core.tasks.update_references[167c31ed-f17e-44bd-b562-a4015889fc36] raised unexpected: MultipleObjectsReturned('get() returned more than one CtlRefCard -- it returned 2!')
+                # Traceback (most recent call last):
+                # File "/opt/venv/lib/python3.12/site-packages/celery/app/trace.py", line 453, in trace_task
+                #     R = retval = fun(*args, **kwargs)
+                #                 ^^^^^^^^^^^^^^^^^^^^
+                # File "/opt/venv/lib/python3.12/site-packages/celery/app/trace.py", line 736, in __protected_call__
+                #     return self.run(*args, **kwargs)
+                #         ^^^^^^^^^^^^^^^^^^^^^^^^^
+                # File "/cardctl/core/tasks.py", line 75, in update_references
+                #     ref_card = CtlRefCard.objects.get(metadata__id=card_data.get("id"))
+                #             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                # File "/opt/venv/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+                #     return getattr(self.get_queryset(), name)(*args, **kwargs)
+                #         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                # File "/opt/venv/lib/python3.12/site-packages/django/db/models/query.py", line 636, in get
+                #     raise self.model.MultipleObjectsReturned(
+                # core.models.CtlRefCard.MultipleObjectsReturned: get() returned more than one CtlRefCard -- it returned 2!
             except CtlRefCard.DoesNotExist:
                 ref_card = CtlRefCard(
                     name=card_data.get("name"),
